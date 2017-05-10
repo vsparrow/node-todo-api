@@ -9,12 +9,12 @@ MongoClient.connect("mongodb://localhost/TodoApp",(err, db)=>{
     console.log("Connected to MongoDB server");
     
     
-    // db.collection("Todos").insertOne({
-    //     text: "Walk to dog", completed : false
-    // },(err,result)=>{
-    //     if(err){return console.log("Unable to insert todo", err)}
-    //     console.log(JSON.stringify(result.ops,undefined, 2)) //ops contains what was inserted
-    // })
+    db.collection("Todos").insertOne({
+        text: "Eat lunch", completed : false
+    },(err,result)=>{
+        if(err){return console.log("Unable to insert todo", err)}
+        console.log(JSON.stringify(result.ops,undefined, 2)) //ops contains what was inserted
+    })
     // //takes name of collection that you want ot insert into
     
     // db.collection("Users").insertOne({
