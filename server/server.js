@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.post("/todos",(req,res)=>{
     // console.log(req.body);
     var todo = new Todo({text : req.body.text});
-    console.log("req.body.text::",req);
+    // console.log("req.body.text::",req);
     // res.send(todo);
     todo.save().then(
         (doc)=>{res.send(doc)}
