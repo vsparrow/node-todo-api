@@ -7,6 +7,8 @@ var {Todo} = require("./models/todo.js")
 var {ObjectID} = require("mongodb")
 
 var app  = express();
+const port = process.env.PORT || 3000;
+
 app.use(bodyParser.json());
  
 //****************************************************************************** ROUTES
@@ -54,7 +56,8 @@ app.get("/todos/:id",(req,res)=>{
     //error case : send 400, req not valid / send empty body
 });
 
-app.listen(process.env.PORT, process.env.IP,()=>{
+// app.listen(process.env.PORT, process.env.IP,()=>{
+app.listen(port, process.env.IP,()=>{
 console.log("Started on",process.env.PORT," ", process.env.IP)
 })
 
