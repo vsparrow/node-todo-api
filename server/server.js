@@ -3,11 +3,12 @@ var bodyParser = require("body-parser");
 
 var {mongoose} = require("./db/mongoose.js")
 var {Todo} = require("./models/todo.js")
-var {User} = require("./models/user.js")
+// var {User} = require("./models/user.js")
+var {ObjectID} = require("mongodb")
 
 var app  = express();
 app.use(bodyParser.json());
-
+ 
 //****************************************************************************** ROUTES
 //CRUD create/POST read update delete
 
@@ -29,7 +30,29 @@ app.get("/todos",(req,res)=>{
     })
 })
 
-
+app.get("/todos/:id",(req,res)=>{
+    // res.send(req.params);
+    var id = req.params.id;
+    if(!ObjectID.isValid(id)){return res.status(404).send() }
+    // res.send("SUCCESS")
+    //validate id using objectID isValid // if not valid  return respond 404 send back empty body
+        //send without any value    res.status(404).send(e);
+    //findbyid
+    Todo.findById(id).then(
+        // res.send("Got here")
+        (todo) =>{
+            //error
+            if(!todo){return res.status(404).send()}
+            //success  
+            res.send({todo}) //by placing todo in object future proof in case we want to add other things
+            
+        }
+    ).catch((e)=>{res.send(400).send()})
+    //success case 
+        // if todo send back
+        // if not todo found: id ok but not found in collection: send back 404 with empty body
+    //error case : send 400, req not valid / send empty body
+});
 
 app.listen(process.env.PORT, process.env.IP,()=>{
 console.log("Started on",process.env.PORT," ", process.env.IP)
