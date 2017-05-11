@@ -36,6 +36,7 @@ app.get("/todos/:id",(req,res)=>{
     // res.send(req.params);
     var id = req.params.id;
     if(!ObjectID.isValid(id)){return res.status(404).send() }
+
     // res.send("SUCCESS")
     //validate id using objectID isValid // if not valid  return respond 404 send back empty body
         //send without any value    res.status(404).send(e);
@@ -55,6 +56,16 @@ app.get("/todos/:id",(req,res)=>{
         // if not todo found: id ok but not found in collection: send back 404 with empty body
     //error case : send 400, req not valid / send empty body
 });
+
+app.delete("/todos/:id", (req,res)=>{
+    var id = req.params.id; //get id//ID coming back//tested //res.status(200).send({id: `ID: ${id}`});
+    if(!ObjectID.isValid(id)){return res.status(404).send()} ////validate id   //if not valid return 404
+    Todo.findByIdAndRemove(id).then((todo)=>{
+        if(!todo){return res.status(404).send()}
+        res.status(200).send(todo)
+    }).catch((e)=>{res.status(400).send();})  
+});
+
 
 // app.listen(process.env.PORT, process.env.IP,()=>{
 app.listen(port, process.env.IP,()=>{
