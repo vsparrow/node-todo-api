@@ -1,10 +1,12 @@
-var express = require("express");
-var bodyParser = require("body-parser");
+const _=require("lodash")
+const express = require("express");
+const bodyParser = require("body-parser");
+const {ObjectID} = require("mongodb")
 
 var {mongoose} = require("./db/mongoose.js")
 var {Todo} = require("./models/todo.js")
 // var {User} = require("./models/user.js")
-var {ObjectID} = require("mongodb")
+
 
 var app  = express();
 const port = process.env.PORT || 3000;
@@ -65,6 +67,35 @@ app.delete("/todos/:id", (req,res)=>{
         res.status(200).send({todo})
     }).catch((e)=>{res.status(400).send();})  
 });
+
+// ------------------------------------------------------------------PATCH Route
+//update todo items
+app.patch('/todos/:id',(req,res)=>{
+    var id = req.params.id;
+    var body = _.pick(req.body, ['text','completed'])//pull of the items we want, takes array of items to pull of if they exist
+    if(!ObjectID.isValid(id)){return res.status(404).send()} 
+    
+    if(_.isBoolean(body.completed) && body.completed){ //if it is a bool, and is true then run code
+        body.completedAt = new Date().getTime() //getTime return JS timestamp        
+    }else { //not bool or not true
+        body.completedAt = null;
+        body.completed = false;
+    }
+    
+    //update DB 
+    //findByIdAndUpdate //object body was setup above see PICK
+    Todo.findByIdAndUpdate(id, {$set : body}, {new : true}) //newtrue show updated obj not old
+    .then((todo)=>{
+        if(!todo){ return res.status(404).send()}
+        res.send({todo});
+    })
+    .catch((e)=>{res.status(400).send()})
+    
+    
+    
+})
+
+
 
 
 // app.listen(process.env.PORT, process.env.IP,()=>{
