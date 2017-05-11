@@ -3,8 +3,12 @@ const request = require("supertest")
 
 const {app} = require("./../server.js");
 const {Todo} = require("./../models/todo.js")
+const {ObjectID} = require("mongodb")
 
-const todos = [{text : "First test todo"},{text : "Second test todo"}];
+const todos = [
+    {_id : new ObjectID(),text : "First test todo"},
+    {_id : new ObjectID(),text : "Second test todo"}
+];
 // beforeEach((done)=>{Todo.remove({}).then(()=> done()); }); //wipes todos //start with 0 //before mod
 beforeEach((done)=>{Todo.remove({}).then(()=> {
         return Todo.insertMany(todos);
@@ -55,3 +59,41 @@ describe("GET /todos",()=>{
         }).end(done)
     })
 })
+
+describe("GET /todos/:id",()=>{
+   it("should return todo doc",(done)=>{
+       request(app)
+        .get(`/todos/${todos[0]._id.toHexString()}`)
+       .expect(200)
+       .expect((res)=>{
+           expect(res.body.todo.text).toBe(todos[0].text)
+       })  
+       .end(done)
+   }) 
+   
+   it("should return 404 if todo not found",(done)=>{
+       var hexId = new ObjectID().toHexString();
+       request(app)
+    //   .get(`/todos/${"1234567890ab".toHexString()}`)
+      .get(`/todos/${hexId}`)
+    // .get(`/todos/${todos[0]._id.toHexString()}`)
+       .expect(404)
+       .end(done)
+       //make req using real object id // call to hexstring method
+       //call new obj id, but wont be found in colection
+       //send 404 back
+   })
+   
+   it("should return 404 for non object ids",(done)=>{
+       // todos/123   //123 to obj id should fail
+       //should send 404 back
+        request(app)
+        .get(`/todos/123`)  //${todos[0]._id.toHexString()}`
+        // .get(`/todos/${todos[0]._id.toHexString()}`)
+        .expect(404)
+        .end(done)
+    
+    //   if(ObjectID.isValid(res.body.))
+   })
+   
+});
