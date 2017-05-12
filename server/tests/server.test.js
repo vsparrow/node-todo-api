@@ -8,7 +8,7 @@ const {Todo} = require("./../models/todo.js")
 
 const todos = [
     {_id : new ObjectID(),text : "First test todo"},
-    {_id : new ObjectID(),text : "Second test todo"}
+    {_id : new ObjectID(),text : "Second test todo",completed:true, completedAt: 3333}
 ];
 // beforeEach((done)=>{Todo.remove({}).then(()=> done()); }); //wipes todos //start with 0 //before mod
 beforeEach((done)=>{Todo.remove({}).then(()=> {
@@ -122,4 +122,86 @@ describe("DELETE /todos/:id",()=>{
         .expect(404)
         .end(done)
     });
+    
 });
+
+describe("PATCH /todos/:id",()=>{
+    it("should update the todo",(done)=>{
+        var hexId = todos[0]._id.toHexString();//grab id of first item
+        var data = {text: "Anything??", completed : true} //update txt, completed: true
+        request(app)
+        .patch(`/todos/${hexId}`) //make patch req/     provide proper url with id inside 
+        .send(data)//use send to send some data
+        .expect(200)         //200 back
+        .expect((res)=>{
+            // console.log("RES.body.todo IS ---->",res.body.todo);
+            expect(res.body.todo.text).toBe("Anything??")
+            expect(res.body.todo.completed).toBe(true)
+            expect(res.body.todo.completedAt).toBeA("number")
+            // .expect(res.body.todo.completed).toBe(true) //*****************LOOK HERE
+        //     .expect(res.body.completedAt).toBeA("number")
+            // .done()
+        })
+        .end(done)
+        // .expect((res)=>{
+        //     // console.log("RES2 --->",res.body);
+        //     expect(res.body.todo.completed).toBe(true)
+        // })
+        // .expect((res)=>{
+        //     // console.log("RES2 --->",res.body);
+        //     // console.log("Completed at type is: " + typeof(res.body.todo.completedAt))
+        //     expect(res.body.todo.completedAt).toBeA("number")
+        // })
+        // .end(done) //THIS WORKS IF JUST here
+    /*    .end((err,res)=>{  ///not neeeded
+            if(err){return done(err)}
+            //check against DB
+            Todo.findById(hexId).then((todo)=>{
+                expect(todo.text === "Anything??");
+                expect(todo.completed === true);
+                expect(todo.completedAt).toBeA("number")
+                done()
+            }).catch((e)=>{done(e)})
+        }) */
+        // .catch((e)=>{done(e)})
+        //along as the rq body
+        //update the text = "anything" // set compelted = true 
+    
+
+        //assert text has changed // competed true // compeltedat is a number //use tobeA
+    });
+   
+    it("should clear completedAt when todo is not completed",(done)=>{
+        var hexId = todos[1]._id.toHexString();//grab id of 2nd todo // console.log(hexId);
+        // update text to differnt     // set compelted false
+        var data = {text : "changed text", completed : false}
+        request(app)
+        .patch(`/todos/${hexId}`)
+        .send(data)
+        .expect(200) // assert 200
+         // resbody now has changes text changed,
+        .expect((res)=>{
+        //   console.log(res.body);  
+            expect(res.body.todo.completed).toBe(false);
+            expect(res.body.todo.completedAt).toBe(null)
+            
+        }) 
+          //completed fasle//completedat is null
+        // //can use to not exist method        
+        //run npm test
+        .end((error,res)=>{
+            if(error){return done(error)}
+           Todo.findById(res.body.todo._id).then((todo)=>{
+                // console.log(todo)
+                expect(todo.completed).toBe(false)
+                expect(todo.completedAt).toBe(null)            
+                done()
+            }).catch((e)=>{done(e)});
+        })
+    });
+   
+    // it("should",(done)=>{});
+    
+    // it("should",(done)=>{});
+    
+})
