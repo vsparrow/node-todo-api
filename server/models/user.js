@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const _ = require("lodash"); 
-
+const bcrypt = require("bcryptjs");
 
 //stores schema for a user / stores properties //we cant add methods to user unless we
 //swtich how we generate out model. thats why ise mongooseSchema
@@ -54,6 +54,41 @@ UserSchema.statics.findByToken = function (token) {
         "tokens.access" : "auth"
     })
 }
+
+UserSchema.pre("save",function (next) {
+    var user = this;
+//    var hash = null;
+    if(user.isModified("password")){
+        console.log(user.password)
+        bcrypt.genSalt(10,(err,salt)=>{
+            // if(err){next(err)}
+            bcrypt.hash(user.password,salt,(err,hash)=>{
+                // if(err){next(err)}
+                // console.log("Hash :",hash); ////////
+                user.password = hash; next();
+                // this.update({"password" : hash})
+                // this.update( {$set: {"password" : hash}})
+                // this._doc.password = hash;
+                // this.password = hash;
+                // console.log("THIS PASSWORD",this.password)
+                // next()
+                    //  console.log("user password after hash and assignments:",user.password)
+                
+                
+            })
+        })    
+        
+
+     //start server, make new user inside postman
+     //once get 200
+     //then view records in db, see hashed password 
+     //drop db if you wnat
+    //  console.log("user password after hash:",user.password)
+    //  next(user)
+    }else {
+        next()
+    }
+})
 
 var User = mongoose.model("User",UserSchema)
 
