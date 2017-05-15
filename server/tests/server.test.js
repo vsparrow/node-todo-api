@@ -259,7 +259,7 @@ describe("POST /users",()=>{
                 expect(user).toExist()
                 expect(user.password).toNotBe(password)
                 done()
-            })
+            }).catch((err)=>{done(err)}) //*********************************************
         });
     });
     //send invalid email//send invalid password//expect 400 ->then good
@@ -281,8 +281,54 @@ describe("POST /users",()=>{
     });
 })
 
-// call users/me
-// NOT give xauth
-// expect 401 back
-// body should be empty object //user toEqual
-// calledn done
+ 
+ 
+
+describe("POST /users/login", ()=>{
+    it("should login user and return auth token",(done)=>{
+        request(app)
+        .post("/users/login")
+        .send({email: users[1].email, password : users[1].password})
+        .expect(200)
+        .expect((res)=>{
+            expect(res.headers["x-auth"]).toExist();
+            
+        })
+        .end((err,res)=>{
+            if(err){done(err)}
+            User.findById(users[1]._id).then((user)=>{
+                expect(user.tokens[0]).toInclude({
+                    access: "auth", token: res.headers["x-auth"]
+                })
+                done()
+            }).catch((err)=>{done(err)})
+        })
+    })
+    
+    //similar to above // pass in invalid pass
+    //tweak asssertions // get 400// xauth not exist
+    //user tokens array has lenght of 0
+    
+    it("should reject invalid login",(done)=>{
+        request(app)
+        .post("/users/login")
+        .send({email: users[1].email, password : "badpass"})
+        .expect(400)
+        .expect((res)=>{
+            expect(res.headers["x-auth"]).toNotExist();
+            
+        })
+        // .end(done)
+        .end((err,res)=>{
+            if(err){done(err)}
+            User.findById(users[1]._id).then((user)=>{
+                expect(user.tokens .length).toEqual(0)
+                done()
+            }).catch((err)=>{done(err)})
+            
+        })//
+    })//it
+    
+}); //des
+
+
