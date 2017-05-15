@@ -35,6 +35,10 @@ UserSchema.methods.toJSON = function() {
     return _.pick(userObject,["_id","email"]);
 }
 
+UserSchema.methods.removeToken = function(token){
+    var user = this;
+    return user.update({$pull : {tokens: {token: token} }})
+}
 
 // UserSchema.statics //everything turns into model meethod rather than instance method
 UserSchema.statics.findByToken = function (token) {

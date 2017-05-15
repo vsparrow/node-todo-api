@@ -143,6 +143,20 @@ app.post("/users/login",(req,res)=>{
     }).catch((e)=>{res.status(400).send()})
 })
 
+
+//delete route
+//delte toekn inside authentication middleware
+app.delete("/users/me/token",authenticate,(req,res)=>{
+    //we can call requser since user authenitcated
+    req.user.removeToken(req.token).then(()=>{
+        res.status(200).send()
+    },()=>{res.status(400).send()});
+    
+})
+
+
+
+
 // app.listen(process.env.PORT, process.env.IP,()=>{
 app.listen(port, process.env.IP,()=>{
 console.log("Started on",process.env.PORT," ", process.env.IP)
