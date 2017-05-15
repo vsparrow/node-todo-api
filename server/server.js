@@ -18,9 +18,9 @@ app.use(bodyParser.json());
 //****************************************************************************** ROUTES todos
 //CRUD create/POST read update delete
 
-app.post("/todos",(req,res)=>{
+app.post("/todos",authenticate,(req,res)=>{
     // console.log(req.body);
-    var todo = new Todo({text : req.body.text});
+    var todo = new Todo({text : req.body.text, _creator : req.user._id});   //!! set _creator here
     // console.log("req.body.text::",req);
     // res.send(todo);
     todo.save().then(
@@ -28,27 +28,20 @@ app.post("/todos",(req,res)=>{
         ,(e)=>{res.status(400).send(e)});
 })
 
-app.get("/todos",(req,res)=>{
-    Todo.find().then((todos)=>{
+// app.get("/todos",(req,res)=>{
+app.get("/todos",authenticate,(req,res)=>{
+    Todo.find({_creator : req.user._id}).then((todos)=>{
         res.send({todos})  //<-es6 es5-> {todos : todos}
     },(e)=>{
         res.status(400).send(e);
     })
 })
 
-app.get("/todos/:id",(req,res)=>{
-    // res.send(req.params);
+app.get("/todos/:id",authenticate,(req,res)=>{
     var id = req.params.id;
     if(!ObjectID.isValid(id)){return res.status(404).send() }
-
-    // res.send("SUCCESS")
-    //validate id using objectID isValid // if not valid  return respond 404 send back empty body
-        //send without any value    res.status(404).send(e);
-    //findbyid
-    Todo.findById(id).then(
-        // res.send("Got here")
+    Todo.findOne({_id : id, _creator: req.user._id}).then(//Todo.findById(id).then(
         (todo) =>{
-            //error
             if(!todo){return res.status(404).send()}
             //success  
             res.send({todo}) //by placing todo in object future proof in case we want to add other things
@@ -61,10 +54,13 @@ app.get("/todos/:id",(req,res)=>{
     //error case : send 400, req not valid / send empty body
 });
 
-app.delete("/todos/:id", (req,res)=>{
+app.delete("/todos/:id",authenticate, (req,res)=>{
     var id = req.params.id; //get id//ID coming back//tested //res.status(200).send({id: `ID: ${id}`});
     if(!ObjectID.isValid(id)){return res.status(404).send()} ////validate id   //if not valid return 404
-    Todo.findByIdAndRemove(id).then((todo)=>{
+    // Todo.findByIdAndRemove(id).then((todo)=>{
+    Todo.findOneAndRemove({
+        _id: id, _creator : req.user._id
+    }).then((todo)=>{
         if(!todo){return res.status(404).send()}
         res.status(200).send({todo})
     }).catch((e)=>{res.status(400).send();})  
@@ -72,7 +68,7 @@ app.delete("/todos/:id", (req,res)=>{
 
 // -------------------------------------------------------------TODO PATCH Route
 //update todo items
-app.patch('/todos/:id',(req,res)=>{
+app.patch('/todos/:id',authenticate,(req,res)=>{
     var id = req.params.id;
     var body = _.pick(req.body, ['text','completed'])//pull of the items we want, takes array of items to pull of if they exist
     if(!ObjectID.isValid(id)){return res.status(404).send()} 
@@ -83,10 +79,8 @@ app.patch('/todos/:id',(req,res)=>{
         body.completedAt = null;
         body.completed = false;
     }
-    
-    //update DB 
-    //findByIdAndUpdate //object body was setup above see PICK
-    Todo.findByIdAndUpdate(id, {$set : body}, {new : true}) //newtrue show updated obj not old
+    // Todo.findByIdAndUpdate(id, {$set : body}, {new : true}) //newtrue show updated obj not old
+    Todo.findOneAndUpdate({_id: id, _creator : req.user._id }, {$set : body}, {new : true}) //newtrue show updated obj not old
     .then((todo)=>{
         if(!todo){ return res.status(404).send()}
         res.send({todo});
