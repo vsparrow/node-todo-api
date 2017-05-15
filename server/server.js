@@ -4,7 +4,7 @@ const _=require("lodash")
 const express = require("express");
 const bodyParser = require("body-parser");
 const {ObjectID} = require("mongodb")
-
+const bcrypt = require("bcryptjs")
 var {mongoose} = require("./db/mongoose.js")
 var {Todo} = require("./models/todo.js")
 var {User} = require("./models/user.js")
@@ -123,8 +123,25 @@ app.get("/users/me", authenticate,(req, res) => {
     res.send(req.user);
 });
 
-
-
+// ------------------------------------Dedicated for logging in users POST Route
+app.post("/users/login",(req,res)=>{
+    var body = _.pick(req.body, ["email","password"])
+    // User.findOne({"email": body.email}).then((result)=>{
+    //     if(result===null){res.status(400).send()}
+    //     bcrypt.compare(body.password,result.password,(err,result)=>{
+    //         if(err){console.log(err)}
+    //         if(result===false){return res.status(400).send()}
+    //         // if(result===true){return res.send("match")}
+    //         if(result===true){return res.send(body)}
+    //     })
+    // })
+    User.findByCredentials(body.email,body.password).then((user)=>{
+        // res.send(user)
+        user.generateAuthToken().then((token)=>{
+            res.header("x-auth", token).send(user);
+        })
+    }).catch((e)=>{res.status(400).send()})
+})
 
 // app.listen(process.env.PORT, process.env.IP,()=>{
 app.listen(port, process.env.IP,()=>{

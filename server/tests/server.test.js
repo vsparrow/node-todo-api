@@ -275,7 +275,7 @@ describe("POST /users",()=>{
     it("should not createuser if email in use", (done)=>{
         request(app)
         .post("/users")
-        .send({email: "andrew@example.com", password : "123abc"})
+        .send({email: "andrew@example.com", password : "Password1!"})
         .expect(400)
         .end(done)
     });
